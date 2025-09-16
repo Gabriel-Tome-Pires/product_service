@@ -4,6 +4,7 @@ import com.example.product_service.exception.ObjectNotFoundException;
 import com.example.product_service.model.Product;
 import com.example.product_service.model.ProductQuantity;
 import com.example.product_service.repository.ProductQuantityRepository;
+import com.example.product_service.repository.ProductRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductQuantityService {
     private final ProductQuantityRepository productQuantityRepository;
+    private final ProductRepository productRepository;
 
     public List<ProductQuantity> getAllProductQuantity(){
         return productQuantityRepository.findAll();
@@ -22,17 +24,19 @@ public class ProductQuantityService {
         return productQuantityRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Product Quantity Not Found"));
     }
 
-    public ProductQuantity findProductQuantityByProduct(Product product){
+    public ProductQuantity getProductQuantityByProduct(Product product){
         return productQuantityRepository.findByProduct(product);
     }
 
     public ProductQuantity createProductQuantity(ProductQuantity productQuantity){
-        //TODO check if is valid
+        checkIsValid(productQuantity);
+
         return productQuantityRepository.save(productQuantity);
     }
 
     public ProductQuantity updateProductQuantity(ProductQuantity productQuantity, Long id){
-        //TODO check if is valid
+        checkIsValid(productQuantity);
+
         ProductQuantity productQuantityToUpdate = getProductQuantityById(id);
         productQuantityToUpdate.setQuantity(productQuantity.getQuantity());
         productQuantityToUpdate.setProduct(productQuantity.getProduct());
@@ -42,6 +46,13 @@ public class ProductQuantityService {
     public void deleteProductQuantityById(Long id){
         getProductQuantityById(id);
         productQuantityRepository.deleteById(id);
+    }
+
+    private void checkIsValid(ProductQuantity productQuantity){
+        productRepository.findById(productQuantity.getProduct().getId());
+        if(productQuantity.getQuantity() <= 0){
+            throw new IllegalArgumentException("Quantity cannot be less than 0");
+        }
     }
 
 }
