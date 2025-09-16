@@ -29,13 +29,17 @@ public class Product {
     @NotNull
     //@Column(name = "product_owner_id")
     private Long ownerId;
+    @NotBlank
+    @NotNull
+    private String SKU;
 
-    public Product(String name, String description, double price, Category category, ProductStatus status, long owner_id) {
+    public Product(String name, String description, double price, Category category, ProductStatus status, long owner_id, String SKU) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.category = category;
         this.status = status;
         this.ownerId = owner_id;
+        this.SKU = SKU;
     }
 }

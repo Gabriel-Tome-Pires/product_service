@@ -9,8 +9,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-        Order findByUserId(Long userId);
-        Order findByOrderStatus(OrderStatus orderStatus);
+        List<Order> findByUserId(Long userId);
+        List<Order> findByOrderStatus(OrderStatus orderStatus);
         List<Order> findByDateBefore(LocalDateTime date);
         List<Order> findByDateAfter(LocalDateTime date);
+        List<Order> findByDate(LocalDateTime date);
 }
