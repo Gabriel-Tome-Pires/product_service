@@ -20,9 +20,9 @@ public class ProductStatus {
     @NotBlank
     @NotNull
     @Setter
-    private String status;
+    private String name;
 
-    public ProductStatus(String status) {
-        this.status = status;
+    public ProductStatus(String name) {
+        this.name = name;
     }
 }

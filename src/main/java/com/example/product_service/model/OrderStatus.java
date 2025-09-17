@@ -21,9 +21,9 @@ public class OrderStatus {
     @NotBlank
     @NotNull
     @Setter
-    private String status;
+    private String statusName;
 
-    public OrderStatus(String status) {
-        this.status = status;
+    public OrderStatus(String statusName) {
+        this.statusName = statusName;
     }
 }

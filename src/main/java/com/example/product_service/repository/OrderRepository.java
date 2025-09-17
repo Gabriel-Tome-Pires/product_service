@@ -14,4 +14,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         List<Order> findByDateBefore(LocalDateTime date);
         List<Order> findByDateAfter(LocalDateTime date);
         List<Order> findByDate(LocalDateTime date);
+        boolean existsByOrderStatus(OrderStatus orderStatus);
 }

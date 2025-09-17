@@ -20,10 +20,10 @@ public class Category {
     @NotBlank
     @NotNull
     @Setter
-    private String category;
+    private String name;
 
-    public Category(String category) {
-        this.category = category;
+    public Category(String name) {
+        this.name = name;
     }
 
 }

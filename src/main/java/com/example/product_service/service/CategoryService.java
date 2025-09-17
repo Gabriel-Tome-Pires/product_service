@@ -1,9 +1,12 @@
 package com.example.product_service.service;
 
+import com.example.product_service.exception.ObjectCannotBeDeleted;
 import com.example.product_service.exception.ObjectNotFoundException;
 import com.example.product_service.model.Category;
 import com.example.product_service.repository.CategoryRepository;
+import com.example.product_service.repository.ProductRepository;
 import lombok.AllArgsConstructor;
+import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,17 +15,32 @@ import java.util.List;
 @AllArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     public Category createCategory(Category category){
-        validateCategory(category.getCategory());
+        String validatedCategory=validateCategory(category.getName());
+        category.setName(validatedCategory);
 
         return categoryRepository.save(category);
     }
 
     public void deleteCategory(Long id){
-        getCategoryById(id);
+        Category category=getCategoryById(id);
+        if(productRepository.existsByCategory(category)){
+            throw new ObjectCannotBeDeleted
+                    ("Product category with id "+id+" and name "+category.getName()+" is in use by at least one product and cannot be deleted");
+        }
 
         categoryRepository.deleteById(id);
+    }
+
+    public Category updateCategory(Category category, Long id){
+        String validatedCategory=validateCategory(category.getName());
+        Category updatedCategory = getCategoryById(id);
+
+        updatedCategory.setName(validatedCategory);
+
+        return categoryRepository.save(updatedCategory);
     }
 
     public List<Category> getAllCategories(){
@@ -33,17 +51,14 @@ public class CategoryService {
         return categoryRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("A category with this id was not found"));
     }
 
-    public Category updateCategory(Category category, Long id){
-        validateCategory(category.getCategory());
-
-        Category updatedCategory = getCategoryById(id);
-        updatedCategory.setCategory(category.getCategory());
-        return categoryRepository.save(category);
-    }
-
-    private void validateCategory(String categoryName){
-        if(categoryName != null && !categoryName.isEmpty()){
-            throw new IllegalArgumentException("Category name cannot be null or empty");
+    private String validateCategory(String categoryName){
+        String validatedCategory=categoryName.toLowerCase().trim();
+        List<Category> categories=getAllCategories();
+        for(Category category:categories){
+            if(category.getName().equals(validatedCategory)){
+                throw new DuplicateResourceException("A category with the name "+validatedCategory+" already exists");
+            }
         }
+        return validatedCategory;
     }
 }

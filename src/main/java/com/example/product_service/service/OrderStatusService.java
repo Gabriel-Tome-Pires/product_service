@@ -1,9 +1,12 @@
 package com.example.product_service.service;
 
+import com.example.product_service.exception.ObjectCannotBeDeleted;
 import com.example.product_service.exception.ObjectNotFoundException;
 import com.example.product_service.model.OrderStatus;
+import com.example.product_service.repository.OrderRepository;
 import com.example.product_service.repository.OrderStatusRepository;
 import lombok.AllArgsConstructor;
+import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,11 +15,31 @@ import java.util.List;
 @AllArgsConstructor
 public class OrderStatusService {
     private final OrderStatusRepository orderStatusRepository;
+    private final OrderRepository orderRepository;
 
     public OrderStatus createOrderStatus(OrderStatus orderStatus) {
-        validateOrderStatus(orderStatus.getStatus());
+        String validStatus=validateOrderStatus(orderStatus.getStatusName());
+        orderStatus.setStatusName(validStatus);
 
         return orderStatusRepository.save(orderStatus);
+    }
+
+    public OrderStatus updateOrderStatus(Long id, OrderStatus orderStatus) {
+        String validateStatus=validateOrderStatus(orderStatus.getStatusName());
+        OrderStatus updateOrderStatus = getOrderStatusById(id);
+
+        updateOrderStatus.setStatusName(validateStatus);
+
+        return orderStatusRepository.save(updateOrderStatus);
+    }
+
+    public void deleteOrderStatus(Long id){
+        OrderStatus orderStatus= getOrderStatusById(id);
+        if(orderRepository.existsByOrderStatus(orderStatus)){
+            throw new ObjectCannotBeDeleted
+                    ("Order status with id "+id+" and name "+orderStatus.getStatusName()+" is in use by at least one order and cannot be deleted");
+        }
+        orderStatusRepository.deleteById(id);
     }
 
     public List<OrderStatus> getAllOrderStatuses(){
@@ -25,25 +48,19 @@ public class OrderStatusService {
 
     public OrderStatus getOrderStatusById(Long id){
         return orderStatusRepository.findById(id).orElseThrow(
-                ()-> new ObjectNotFoundException("Order Status with this id was not found!"));
+                ()-> new ObjectNotFoundException("Order Status with id "+id+" was not found!"));
     }
 
-    public OrderStatus updateOrderStatus(Long id, OrderStatus orderStatus) {
-        validateOrderStatus(orderStatus.getStatus());
+    private String validateOrderStatus(String status){
+        String validatedStatus=status.toLowerCase().trim();
 
-        OrderStatus updateOrderStatus = getOrderStatusById(id);
-        updateOrderStatus.setStatus(orderStatus.getStatus());
-        return orderStatusRepository.save(updateOrderStatus);
-    }
-
-    public void deleteOrderStatus(Long id){
-        getOrderStatusById(id);
-        orderStatusRepository.deleteById(id);
-    }
-
-    private void validateOrderStatus(String status){
-        if(status==null || status.isEmpty()) {
-            throw new IllegalArgumentException("Status cannot be null or empty");
+        List<OrderStatus> orderStatuses = getAllOrderStatuses();
+        for(OrderStatus orderStatus : orderStatuses){
+            if(orderStatus.getStatusName().equals(validatedStatus)){
+                throw new DuplicateResourceException("Order status with the name "+validatedStatus+" already exists");
+            }
         }
+
+        return validatedStatus;
     }
 }

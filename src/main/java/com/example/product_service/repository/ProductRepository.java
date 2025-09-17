@@ -13,4 +13,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByOwnerId(Long ownerId);
     List<Product> findByStatus(ProductStatus status);
     List<Product> findBySKUContaining(String sku);
+    boolean existsByCategory(Category category);
+    boolean existsByStatus(ProductStatus status);
 }

@@ -16,18 +16,6 @@ public class ProductQuantityService {
     private final ProductQuantityRepository productQuantityRepository;
     private final ProductRepository productRepository;
 
-    public List<ProductQuantity> getAllProductQuantity(){
-        return productQuantityRepository.findAll();
-    }
-
-    public ProductQuantity getProductQuantityById(Long id){
-        return productQuantityRepository.findById(id).orElseThrow(()-> new ObjectNotFoundException("Product Quantity Not Found"));
-    }
-
-    public ProductQuantity getProductQuantityByProduct(Product product){
-        return productQuantityRepository.findByProduct(product);
-    }
-
     public ProductQuantity createProductQuantity(ProductQuantity productQuantity){
         checkIsValid(productQuantity);
 
@@ -36,10 +24,10 @@ public class ProductQuantityService {
 
     public ProductQuantity updateProductQuantity(ProductQuantity productQuantity, Long id){
         checkIsValid(productQuantity);
-
         ProductQuantity productQuantityToUpdate = getProductQuantityById(id);
+
         productQuantityToUpdate.setQuantity(productQuantity.getQuantity());
-        productQuantityToUpdate.setProduct(productQuantity.getProduct());
+
         return productQuantityRepository.save(productQuantityToUpdate);
     }
 
@@ -48,10 +36,34 @@ public class ProductQuantityService {
         productQuantityRepository.deleteById(id);
     }
 
+    public List<ProductQuantity> getAllProductQuantity(){
+        return productQuantityRepository.findAll();
+    }
+
+    public ProductQuantity getProductQuantityById(Long id){
+        return productQuantityRepository.findById(id)
+                .orElseThrow(()-> new ObjectNotFoundException("Product Quantity with id "+id+" was Not Found"));
+    }
+
+    public ProductQuantity getProductQuantityByProduct(Product product){
+        checkProductIsValid(product);
+
+        return productQuantityRepository.findByProduct(product)
+                .orElseThrow(()-> new ObjectNotFoundException("Product Quantity for the product "+product.getName()+
+                                                              " with id "+product.getId()+" was Not Found"));
+    }
+
     private void checkIsValid(ProductQuantity productQuantity){
-        productRepository.findById(productQuantity.getProduct().getId());
-        if(productQuantity.getQuantity() <= 0){
+        checkProductIsValid(productQuantity.getProduct());
+        if(productQuantity.getQuantity() < 0){
             throw new IllegalArgumentException("Quantity cannot be less than 0");
+        }
+    }
+
+    private void checkProductIsValid(Product product){
+        Long id=product.getId();
+        if(!productRepository.existsById(id)){
+            throw new ObjectNotFoundException("Product with id "+id+" was not found");
         }
     }
 

@@ -8,7 +8,6 @@ import com.example.product_service.repository.OrderItemRepository;
 import com.example.product_service.repository.OrderRepository;
 import com.example.product_service.repository.ProductRepository;
 import lombok.AllArgsConstructor;
-import org.apache.kafka.common.errors.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,23 +17,7 @@ import java.util.List;
 public class OrderItemService {
     private final OrderItemRepository orderItemRepository;
     private final OrderRepository orderRepository;
-    private final ProductService productService;
-
-    public List<OrderItem> getAllOrderItems() {
-        return orderItemRepository.findAll();
-    }
-
-    public OrderItem getOrderItemById(Long id) {
-        return orderItemRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("OrderItem with id " + id + " not found"));
-    }
-
-    public List<OrderItem> getOrderItemsByProduct(Product product) {
-        return orderItemRepository.findByProduct(product);
-    }
-
-    public List<OrderItem> getOrderItemByOrder(Order order) {
-        return orderItemRepository.findByOrder(order);
-    }
+    private final ProductRepository productRepository;
 
     public OrderItem saveOrderItem(OrderItem orderItem) {
         checkIfIsValid(orderItem);
@@ -49,16 +32,40 @@ public class OrderItemService {
 
     public OrderItem updateOrderItem(Long id, OrderItem orderItem){
         checkIfIsValid(orderItem);
-
         OrderItem updateOrderItem = getOrderItemById(id);
+
         updateOrderItem.setOrder(orderItem.getOrder());
         updateOrderItem.setProduct(orderItem.getProduct());
+
         return orderItemRepository.save(updateOrderItem);
     }
 
-    private void checkIfIsValid(OrderItem orderItem){
-        orderRepository.findById(orderItem.getOrder().getId());
-        productService.getProductById(orderItem.getProduct().getId());
 
+    public List<OrderItem> getAllOrderItems() {
+        return orderItemRepository.findAll();
+    }
+
+    public OrderItem getOrderItemById(Long id) {
+        return orderItemRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("OrderItem with id " + id + " was not found"));
+    }
+
+    public List<OrderItem> getOrderItemsByProduct(Product product) {
+        return orderItemRepository.findByProduct(product);
+    }
+
+    public List<OrderItem> getOrderItemByOrder(Order order) {
+        return orderItemRepository.findByOrder(order);
+    }
+
+    private void checkIfIsValid(OrderItem orderItem){
+        Long orderId=orderItem.getOrder().getId();
+        Long productId=orderItem.getProduct().getId();
+
+        orderRepository.findById(orderId).orElseThrow(
+                ()-> new ObjectNotFoundException("Order with id "+orderId+" was not found")
+        );
+        productRepository.findById(productId).orElseThrow(
+                ()-> new ObjectNotFoundException("Product with id "+productId+" was not found")
+        );
     }
 }
