@@ -5,6 +5,7 @@ import com.example.product_service.model.Category;
 import com.example.product_service.model.Product;
 import com.example.product_service.model.ProductStatus;
 import com.example.product_service.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.List;
 public class ProductService {
     private ProductRepository productRepository;
 
+    @Transactional
     public Product updateProduct(Product product, Long id){
         Product updateProduct=getProductById(id);
         checkIsValid(product);
@@ -30,11 +32,13 @@ public class ProductService {
         return productRepository.save(updateProduct);
     }
 
+    @Transactional
     public void deleteProduct(Long id){
         getProductById(id);
         productRepository.deleteById(id);
     }
 
+    @Transactional
     public Product createProduct(Product product){
         checkIsValid(product);
         return productRepository.save(product);
@@ -73,10 +77,7 @@ public class ProductService {
         if(product.getName().length()<=3){
             throw new IllegalArgumentException("Product name cannot be smaller than 3 characters");
         }
-        if(product.getDescription().length()>128){
-            throw new IllegalArgumentException("Product description cannot be longer than 128 characters");
-        }
-        if(product.getSKU().length()==10){
+        if(product.getSKU().length()!=10){
             throw new IllegalArgumentException("Product SKU should have 10 characters");
         }
         if(product.getPrice() <=0.0){

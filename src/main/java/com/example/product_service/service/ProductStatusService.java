@@ -5,6 +5,7 @@ import com.example.product_service.exception.ObjectNotFoundException;
 import com.example.product_service.model.ProductStatus;
 import com.example.product_service.repository.ProductRepository;
 import com.example.product_service.repository.ProductStatusRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class ProductStatusService {
     private final ProductStatusRepository productStatusRepository;
     private final ProductRepository productRepository;
 
+    @Transactional
     public ProductStatus createProductStatus(ProductStatus productStatus) {
         String validStatus=validateProductStatus(productStatus.getName());
         productStatus.setName(validStatus);
@@ -24,6 +26,7 @@ public class ProductStatusService {
         return productStatusRepository.save(productStatus);
     }
 
+    @Transactional
     public ProductStatus updateProductStatus(ProductStatus productStatus, Long id) {
         String validStatus=validateProductStatus(productStatus.getName());
         ProductStatus updateProductStatus=getProductStatusById(id);
@@ -33,6 +36,7 @@ public class ProductStatusService {
         return productStatusRepository.save(updateProductStatus);
     }
 
+    @Transactional
     public void deleteProductStatus(Long id) {
         ProductStatus status =getProductStatusById(id);
         if(productRepository.existsByStatus(status)) {

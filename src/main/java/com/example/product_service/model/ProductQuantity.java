@@ -1,5 +1,6 @@
 package com.example.product_service.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -21,6 +22,7 @@ public class ProductQuantity {
     private int quantity;
     @OneToOne
     @JoinColumn(name = "product_id",nullable = false)
+    @JsonBackReference
     private Product product;
 
     public ProductQuantity(int quantity, Product product) {

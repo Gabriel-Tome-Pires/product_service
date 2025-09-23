@@ -1,9 +1,13 @@
 package com.example.product_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -27,11 +31,18 @@ public class Product {
     @JoinColumn(name= "status_id")
     private ProductStatus status;
     @NotNull
-    //@Column(name = "product_owner_id")
+    @Column(name = "owner_id")
     private Long ownerId;
     @NotBlank
     @NotNull
     private String SKU;
+    @OneToOne(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
+    @JoinColumn(name = "quantity_id")
+    @JsonManagedReference
+    private ProductQuantity quantity;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<OrderItem> items;
 
     public Product(String name, String description, double price, Category category, ProductStatus status, long owner_id, String SKU) {
         this.name = name;

@@ -11,8 +11,8 @@ import java.util.List;
 public interface OrderRepository extends JpaRepository<Order, Long> {
         List<Order> findByUserId(Long userId);
         List<Order> findByOrderStatus(OrderStatus orderStatus);
-        List<Order> findByDateBefore(LocalDateTime date);
-        List<Order> findByDateAfter(LocalDateTime date);
-        List<Order> findByDate(LocalDateTime date);
+        List<Order> findByCreatedAtBefore(LocalDateTime CreatedAt);
+        List<Order> findByCreatedAtAfter(LocalDateTime CreatedAt);
+        List<Order> findByCreatedAt(LocalDateTime CreatedAt);
         boolean existsByOrderStatus(OrderStatus orderStatus);
 }

@@ -3,6 +3,8 @@ import com.example.product_service.exception.ObjectNotFoundException;
 import com.example.product_service.model.Order;
 import com.example.product_service.model.OrderStatus;
 import com.example.product_service.repository.OrderRepository;
+import com.example.product_service.repository.OrderStatusRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,27 +15,30 @@ import java.util.List;
     @AllArgsConstructor
     public class OrderService {
         private final OrderRepository orderRepository;
+        private final OrderStatusRepository orderStatusRepository;
 
+        @Transactional
         public Order save(Order order){
-            if(!order.getDate().isEqual(LocalDateTime.now())){
-               order.setDate(LocalDateTime.now());
+            if(order.getCreatedAt() == null){
+                order.setCreatedAt(LocalDateTime.now());
             }
             //TODO check initial status
 
             return orderRepository.save(order);
         }
 
+        @Transactional
         public void delete(Long id){
             getById(id);
             //TODO check Status before delete
             orderRepository.deleteById(id);
         }
 
-        public Order update(Order order){
-            Order updateOrder=getById(order.getId());
+        @Transactional
+        public Order update(Order order, Long id){
+            Order updateOrder=getById(id);
 
             updateOrder.setOrderStatus(order.getOrderStatus());
-            updateOrder.setDate(order.getDate());
             updateOrder.setUserId(order.getUserId());
 
             return orderRepository.save(updateOrder);
@@ -53,18 +58,20 @@ import java.util.List;
         }
 
         public List<Order> getByDate(LocalDateTime date){
-            return orderRepository.findByDate(date);
+            return orderRepository.findByCreatedAt(date);
         }
 
         public List<Order> getByBeforeDate(LocalDateTime date){
-            return orderRepository.findByDateBefore(date);
+            return orderRepository.findByCreatedAtBefore(date);
         }
 
         public List<Order> getByAfterDate(LocalDateTime date){
-            return orderRepository.findByDateAfter(date);
+            return orderRepository.findByCreatedAtAfter(date);
         }
 
-        public List<Order> getByStatus(OrderStatus orderStatus){
+        public List<Order> getByStatus(Long orderStatusId){
+            OrderStatus orderStatus=orderStatusRepository.findById(orderStatusId).orElseThrow(
+                    ()-> new ObjectNotFoundException("Order Status with id "+orderStatusId+" was not found!"));
             return orderRepository.findByOrderStatus(orderStatus);
         }
 

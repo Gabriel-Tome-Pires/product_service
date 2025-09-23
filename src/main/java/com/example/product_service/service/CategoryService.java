@@ -5,6 +5,7 @@ import com.example.product_service.exception.ObjectNotFoundException;
 import com.example.product_service.model.Category;
 import com.example.product_service.repository.CategoryRepository;
 import com.example.product_service.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.apache.kafka.common.errors.DuplicateResourceException;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
 
+    @Transactional
     public Category createCategory(Category category){
         String validatedCategory=validateCategory(category.getName());
         category.setName(validatedCategory);
@@ -24,6 +26,7 @@ public class CategoryService {
         return categoryRepository.save(category);
     }
 
+    @Transactional
     public void deleteCategory(Long id){
         Category category=getCategoryById(id);
         if(productRepository.existsByCategory(category)){
@@ -34,6 +37,7 @@ public class CategoryService {
         categoryRepository.deleteById(id);
     }
 
+    @Transactional
     public Category updateCategory(Category category, Long id){
         String validatedCategory=validateCategory(category.getName());
         Category updatedCategory = getCategoryById(id);

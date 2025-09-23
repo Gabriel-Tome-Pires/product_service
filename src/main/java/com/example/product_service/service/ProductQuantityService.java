@@ -5,6 +5,7 @@ import com.example.product_service.model.Product;
 import com.example.product_service.model.ProductQuantity;
 import com.example.product_service.repository.ProductQuantityRepository;
 import com.example.product_service.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,12 +17,14 @@ public class ProductQuantityService {
     private final ProductQuantityRepository productQuantityRepository;
     private final ProductRepository productRepository;
 
+    @Transactional
     public ProductQuantity createProductQuantity(ProductQuantity productQuantity){
         checkIsValid(productQuantity);
 
         return productQuantityRepository.save(productQuantity);
     }
 
+    @Transactional
     public ProductQuantity updateProductQuantity(ProductQuantity productQuantity, Long id){
         checkIsValid(productQuantity);
         ProductQuantity productQuantityToUpdate = getProductQuantityById(id);
@@ -31,6 +34,7 @@ public class ProductQuantityService {
         return productQuantityRepository.save(productQuantityToUpdate);
     }
 
+    @Transactional
     public void deleteProductQuantityById(Long id){
         getProductQuantityById(id);
         productQuantityRepository.deleteById(id);
