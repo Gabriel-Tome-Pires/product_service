@@ -6,7 +6,10 @@ import com.example.product_service.repository.OrderRepository;
 import com.example.product_service.repository.OrderStatusRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.apache.coyote.BadRequestException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,14 +32,26 @@ import java.util.List;
 
         @Transactional
         public void delete(Long id){
-            getById(id);
-            //TODO check Status before delete
+            Order order=getById(id);
+            if(order.getOrderStatus().getStatusName().equals("PAID") ||
+                    order.getOrderStatus().getStatusName().equals("DELIVERED") ||
+                    order.getOrderStatus().getStatusName().equals("CANCELLED") ){
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "You cannot delete a order with the status: " + order.getOrderStatus().getStatusName());
+            }
             orderRepository.deleteById(id);
         }
 
         @Transactional
-        public Order update(Order order, Long id){
+        public Order update(Order order, Long id) {
             Order updateOrder=getById(id);
+
+            if((updateOrder.getOrderStatus().getStatusName().equals("PAID") &&  !order.getOrderStatus().getStatusName().equals("DELIVERED"))||
+                    updateOrder.getOrderStatus().getStatusName().equals("DELIVERED") ||
+                    updateOrder.getOrderStatus().getStatusName().equals("CANCELLED") ){
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "You cannot update this order. Order Status: " + updateOrder.getOrderStatus().getStatusName());
+            }
 
             updateOrder.setOrderStatus(order.getOrderStatus());
             updateOrder.setUserId(order.getUserId());

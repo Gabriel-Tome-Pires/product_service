@@ -1,6 +1,7 @@
 package com.example.product_service.controller;
 
 import com.example.product_service.model.Order;
+import com.example.product_service.service.KafkaService;
 import com.example.product_service.service.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,16 +16,21 @@ import java.util.List;
 @RequestMapping("/order")
 public class OrderController {
     private final OrderService orderService;
+    private final KafkaService kafkaService;
 
     @PostMapping("/add")
     public ResponseEntity<Order> createOrder(@RequestBody Order order) {
         Order newOrder= orderService.save(order);
+        kafkaService.sendMessageOrderCreated(newOrder);
         return ResponseEntity.status(HttpStatus.CREATED).body(newOrder);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody Order order) {
         Order updatedOrder=orderService.update(order, id);
+        if(updatedOrder.getOrderStatus().getStatusName().equals("PAID")){
+            kafkaService.sendMessageOrderPaid(updatedOrder);
+        }
         return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
     }
 
@@ -47,31 +53,31 @@ public class OrderController {
     }
 
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Order>> getAllOrdersByUserId(@RequestParam Long userId) {
+    public ResponseEntity<List<Order>> getAllOrdersByUserId(@PathVariable Long userId) {
         List<Order> orders=orderService.getByUserId(userId);
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
     @GetMapping("/status/{statusId}")
-    public ResponseEntity<List<Order>> getAllOrdersByStatusId(@RequestParam Long statusId) {
+    public ResponseEntity<List<Order>> getAllOrdersByStatusId(@PathVariable Long statusId) {
         List<Order> orders=orderService.getByStatus(statusId);
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
-    @GetMapping("/byDate")
-    public ResponseEntity<List<Order>> getOrdersByDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
+    @GetMapping("/byDate/{date}")
+    public ResponseEntity<List<Order>> getOrdersByDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
         List<Order> orders=orderService.getByDate(date);
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
-    @GetMapping("/beforeDate")
-    public ResponseEntity<List<Order>> getOrdersBeforeDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
+    @GetMapping("/beforeDate/{date}")
+    public ResponseEntity<List<Order>> getOrdersBeforeDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
         List<Order> orders=orderService.getByBeforeDate(date);
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }
 
-    @GetMapping("/afterDate")
-    public ResponseEntity<List<Order>> getOrdersAfterDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
+    @GetMapping("/afterDate/{date}")
+    public ResponseEntity<List<Order>> getOrdersAfterDate(@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime date) {
         List<Order> orders=orderService.getByAfterDate(date);
         return ResponseEntity.status(HttpStatus.OK).body(orders);
     }

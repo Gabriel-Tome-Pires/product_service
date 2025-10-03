@@ -33,23 +33,6 @@ public class OrderItemService {
         orderItemRepository.deleteById(id);
     }
 
-    @Transactional
-    public OrderItem updateOrderItem(Long id, OrderItem orderItem){
-        checkIfIsValid(orderItem);
-        OrderItem updateOrderItem = getOrderItemById(id);
-        //TODO do not allow to update, if OrderStatus is canceled, paid or delivered
-
-        updateOrderItem.setOrder(orderItem.getOrder());
-        updateOrderItem.setProduct(orderItem.getProduct());
-
-        return orderItemRepository.save(updateOrderItem);
-    }
-
-
-    public List<OrderItem> getAllOrderItems() {
-        return orderItemRepository.findAll();
-    }
-
     public OrderItem getOrderItemById(Long id) {
         return orderItemRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("OrderItem with id " + id + " was not found"));
     }

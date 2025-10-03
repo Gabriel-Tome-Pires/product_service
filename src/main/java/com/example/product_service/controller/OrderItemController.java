@@ -22,12 +22,6 @@ public class OrderItemController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newOrderItem);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderItem> updateOrderItem(@PathVariable Long id, @RequestBody OrderItem orderItem){
-       OrderItem updatedOrderItem= orderItemService.updateOrderItem(id,orderItem);
-       return ResponseEntity.status(HttpStatus.OK).body(updatedOrderItem);
-    }
-
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<OrderItem> deleteOrderItem(@PathVariable Long id){
         orderItemService.deleteOrderItemById(id);

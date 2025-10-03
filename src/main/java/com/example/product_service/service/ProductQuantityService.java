@@ -21,6 +21,12 @@ public class ProductQuantityService {
     public ProductQuantity createProductQuantity(ProductQuantity productQuantity){
         checkIsValid(productQuantity);
 
+        Product product = productRepository.findById(productQuantity.getProduct().getId())
+                .orElseThrow(() -> new ObjectNotFoundException(
+                        "Product with id " + productQuantity.getProduct().getId() + " was not found"));
+
+        productQuantity.setProduct(product);
+
         return productQuantityRepository.save(productQuantity);
     }
 
